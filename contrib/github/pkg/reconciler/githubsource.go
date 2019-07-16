@@ -171,8 +171,8 @@ func (r *reconciler) reconcile(ctx context.Context, source *sourcesv1alpha1.GitH
 	}
 
 	routeCondition := ksvc.Status.GetCondition(servingv1alpha1.ServiceConditionRoutesReady)
-	receiveAdapterDomain := ksvc.Status.Domain
-	if routeCondition != nil && routeCondition.Status == corev1.ConditionTrue && receiveAdapterDomain != "" {
+	if routeCondition != nil && routeCondition.Status == corev1.ConditionTrue && ksvc.Status.URL != nil {
+		receiveAdapterDomain := ksvc.Status.URL.Host
 		// TODO: Mark Deployed for the ksvc
 		// TODO: Mark some condition for the webhook status?
 		r.addFinalizer(source)

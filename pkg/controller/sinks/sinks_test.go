@@ -31,7 +31,7 @@ import (
 )
 
 var (
-	addressableDNS = "addressable.sink.svc.cluster.local"
+	addressableURL = fmt.Sprintf("http://%s", addressableDNS)
 
 	addressableName       = "testsink"
 	addressableKind       = "Sink"
@@ -63,13 +63,21 @@ func TestGetSinkURI(t *testing.T) {
 		wantErr   error
 		ref       *corev1.ObjectReference
 	}{
-		"happy": {
+-               "happy - hostname": {
+-                       objects: []runtime.Object{
+-                               getAddressableWithHostname(),
+-                       },
+-                       namespace: testNS,
+-                       ref:       getAddressableRef(),
+-                       want:      addressableURL,
+-               },
+		"happy - uri": {
 			objects: []runtime.Object{
 				getAddressable(),
 			},
 			namespace: testNS,
 			ref:       getAddressableRef(),
-			want:      fmt.Sprintf("http://%s/", addressableDNS),
+                        want:      addressableURL,
 		},
 		"nil hostname": {
 			objects: []runtime.Object{
@@ -165,7 +173,7 @@ func getAddressable() *unstructured.Unstructured {
 			},
 			"status": map[string]interface{}{
 				"address": map[string]interface{}{
-					"hostname": addressableDNS,
+                                        "url": addressableURL,
 				},
 			},
 		},
@@ -218,6 +226,17 @@ func getAddressableNilHostname() *unstructured.Unstructured {
 		},
 	}
 }
+
+func getAddressableWithHostname() *unstructured.Unstructured {
+       a := getAddressable()
+       a.Object["status"] = map[string]interface{}{
+               "address": map[string]interface{}{
+                       "hostname": addressableDNS,
+               },
+       }
+       return a
+}
+
 
 func getServiceRef() *corev1.ObjectReference {
 	return &corev1.ObjectReference{
